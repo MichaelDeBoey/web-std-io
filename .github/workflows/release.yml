@@ -10,7 +10,7 @@ env:
 jobs:
   release:
     name: release
-    if: ${{ github.repository == 'remix-run/web-std-io' }}
+    if: ${{ github.repository == 'web-std/io' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
