@@ -180,6 +180,14 @@ async function fetch(url, options_ = {}) {
 							return;
 						}
 
+						// https://fetch.spec.whatwg.org/#http-redirect-fetch
+						// 6. If locationURL’s scheme is not an HTTP(S) scheme, then return a network error.
+						if (locationURL.protocol !== 'http:' && locationURL.protocol !== 'https:') {
+							reject(new FetchError('URL scheme must be a HTTP(S) scheme', 'bad-redirect-scheme'));
+							finalize();
+							return;
+						}
+
 						// HTTP-redirect fetch step 6 (counter increment)
 						// Create a new Request object.
 						const requestOptions = {
@@ -277,7 +285,6 @@ async function fetch(url, options_ = {}) {
 
 			// For gzip
 			if (codings === 'gzip' || codings === 'x-gzip') {
-				responseOptions.headers.delete("Content-Encoding");
 				body = pump(body, zlib.createGunzip(zlibOptions), reject);
 				response = new Response(fromAsyncIterable(body), responseOptions);
 				resolve(response);
@@ -286,7 +293,6 @@ async function fetch(url, options_ = {}) {
 
 			// For deflate
 			if (codings === 'deflate' || codings === 'x-deflate') {
-				responseOptions.headers.delete("Content-Encoding");
 				// Handle the infamous raw deflate response from old servers
 				// a hack for old IIS and Apache servers
 				const raw = pump(response_, new PassThrough(), reject);
@@ -306,7 +312,6 @@ async function fetch(url, options_ = {}) {
 
 			// For br
 			if (codings === 'br') {
-				responseOptions.headers.delete("Content-Encoding");
 				body = pump(body, zlib.createBrotliDecompress(), reject);
 				response = new Response(fromAsyncIterable(body), responseOptions);
 				resolve(response);
